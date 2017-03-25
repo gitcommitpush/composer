@@ -1,5 +1,7 @@
 from modules.app.utils import app_exists, get_path
+from modules.router.cli import Router
 from app.logging import Logger
+from app import settings
 import subprocess
 import os
 import socket
@@ -29,6 +31,7 @@ class Compose(object):
     def up(self, app):
         self._get_to_app(app)
         subprocess.call('docker-compose up -d', shell=True)
+        Router().set('{}.{}'.format(app, settings.BASE_DOMAIN), os.environ['COMPOSER_PORT'])
 
     def down(self, app):
         self._get_to_app(app)
