@@ -7,7 +7,7 @@ import json
 
 
 class AppManager(object):
-    CONFIG_NAME = 'app.json'
+    CONFIG_NAME = 'compose.json'
 
     def __init__(self, app, expect_exists=False):
         self.app = app
