@@ -2,7 +2,7 @@
 from modules.apps.cli import App
 from modules.config.cli import Config
 from modules.compose.cli import Compose
-from modules.env.cli import Env
+from modules.environment.cli import Env
 import fire
 
 
