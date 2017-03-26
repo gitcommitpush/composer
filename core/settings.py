@@ -1,7 +1,6 @@
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
 
-COMPOSER_DATA_DIR = os.path.join(BASE_DIR, 'apps')
-
-BASE_DOMAIN = 'localhost'
+APP_DIR = os.path.join(DATA_DIR, 'apps')

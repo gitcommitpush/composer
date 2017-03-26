@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-from modules.app.cli import App
-from modules.compose.cli import Compose
+#!/usr/bin/env python3
+from modules.apps.cli import App
 import fire
 
 
 class Composer(object):
     def __init__(self):
-        self.app = App()
-        self.compose = Compose()
+        self.app = App
+
+    def __str__(self):
+        return 'Composer CLI'
 
 
 if __name__ == '__main__':
