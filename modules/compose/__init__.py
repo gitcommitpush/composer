@@ -1,5 +1,5 @@
 from modules.apps import AppConfigManager
-from modules.env import EnvironmentManager
+from modules.environment import EnvironmentManager
 import os
 import subprocess
 

@@ -34,6 +34,11 @@ class AppManager(object):
         shutil.rmtree(self.get_path())
         print('App "{}" successfully deleted.'.format(self.app))
 
+    def update(self):
+        self.expect_exists()
+        subprocess.call('git pull', shell=True)
+        print('App "{}" updated.'.format(self.app))
+
     def create(self, repo=None, branch='master'):
         """
         Create an app.

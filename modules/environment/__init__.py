@@ -26,6 +26,16 @@ class EnvironmentManager(object):
     def clear(self, key):
         if key in self.manager.config['env'].keys():
             del self.manager.config['env'][key]
+            self.manager.save()
             print('Environment variable "{}" successfully deleted.'.format(key))
         else:
             raise Exception('Environment variable "{}" does not exist.'.format(key))
+
+    def clearall(self):
+        del self.manager.config['env']
+        self.manager.save()
+        print('Environment variables successfully cleared.')
+
+    def ls(self):
+        for key, value in self.manager.config['env'].items():
+            print('{}={}'.format(key, value))
