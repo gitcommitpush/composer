@@ -3,21 +3,14 @@ import configparser
 import subprocess
 import shutil
 import os
+import json
 
 
 class AppManager(object):
-    CONFIG_NAME = 'app.ini'
+    CONFIG_NAME = 'app.json'
 
     def __init__(self, app, expect_exists=False):
         self.app = app
-
-    def get_config(self):
-        path = os.path.join(self.get_path(), self.CONFIG_NAME)
-        if not os.path.exists(path):
-            raise Exception('App "{}" does not have a config file.'.format(self.app))
-
-        parser = configparser.ConfigParser()
-        return parser.read(os.path.join(self.get_path(), self.CONFIG_NAME))
 
     def expect_not_exists(self):
         """
@@ -54,7 +47,7 @@ class AppManager(object):
         else:
             print('Empty app "{}" successfully created.')
 
-        open(os.path.join(self.get_path(), self.CONFIG_NAME), 'w+').close()  # Create empty config file
+        open(os.path.join(self.get_path(), self.CONFIG_NAME), 'w+').write(json.dumps({}))  # Create empty config file
 
     def clone_from_repo(self, repo, branch='master'):
         """
@@ -69,6 +62,12 @@ class AppManager(object):
     def get_data_path(self):
         return os.path.join(self.get_path(), 'app-data')
 
+    def get_config_path(self):
+        path = os.path.join(self.get_data_path(), self.CONFIG_NAME)
+        if not os.path.exists(path):
+            return os.path.join(self.get_path(), self.CONFIG_NAME)
+        return path
+
     def get_path(self):
         """
         Get the directory path of an app.
@@ -80,3 +79,41 @@ class AppManager(object):
         Check if an app exists.
         """
         return os.path.exists(self.get_path())
+
+
+class AppConfigManager(object):
+    def __init__(self, app_manager):
+        if not isinstance(app_manager, AppManager):
+            raise Exception('AppConfigManager requires an AppManager instance.')
+
+        app_manager.expect_exists()
+
+        self.app = app_manager
+        self.path = self.app.get_config_path()
+
+        if not os.path.exists(self.path):
+            raise Exception('App "{}" does not have a config file.'.format(self.app))
+
+        self.config = self.get_config()
+
+    def get_config(self):
+        """
+        Get an app config as a Python dictionary.
+        """
+        config = open(self.path, 'r')
+        return json.loads(config.read())
+
+    def save(self):
+        """
+        Save a Python dictionary to an app's config
+        """
+        config = open(self.path, 'w').write(json.dumps(self.config))
+        return config
+
+    def set(self, key, value, auto_save=False):
+        """
+        Programatically set a config value.
+        """
+        self.config[key] = value
+        if auto_save:
+            self.save()

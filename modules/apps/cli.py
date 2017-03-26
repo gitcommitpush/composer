@@ -1,4 +1,4 @@
-from modules.apps import AppManager
+from modules.apps import AppManager, AppConfigManager
 
 
 class App(object):

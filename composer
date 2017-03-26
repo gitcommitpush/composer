@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 from modules.apps.cli import App
+from modules.config.cli import Config
 import fire
 
 
 class Composer(object):
     def __init__(self):
         self.app = App
+        self.config = Config
 
     def __str__(self):
         return 'Composer CLI'
