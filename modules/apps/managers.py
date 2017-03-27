@@ -12,7 +12,7 @@ class AppManager(BaseManager):
 
     def __init__(self, app):
         self.app_name = app
-        self.app = self
+        self.app = self  # Should always be an AppManager instance
         super().__init__()
 
     def get_name(self):
