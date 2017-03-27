@@ -1,6 +1,5 @@
 from core import settings
 from core.managers import BaseManager
-import subprocess
 import shutil
 import os
 import json
@@ -12,12 +11,13 @@ class AppManager(BaseManager):
     CONFIG_NAME = 'compose.json'
 
     def __init__(self, app):
-        self.app = app
+        self.app_name = app
+        self.app = self
         super().__init__()
 
     def get_name(self):
         # Get app name
-        return self.app
+        return self.app_name
 
     def get_path(self):
         # Get app path
@@ -61,7 +61,9 @@ class AppManager(BaseManager):
 
         config_path = self.get_config_path()
         if not os.path.exists(config_path):
-            sh.touch(self.get_config_path())
+            with open(self.get_config_path(), 'w+') as f:
+                f.write(json.dumps({}))
+                f.close()
 
         self.logger.info('Created successfully.')
 
@@ -105,3 +107,25 @@ class AppManager(BaseManager):
         os.mkdir(self.get_data_path())
 
         self.clone(*args)
+
+
+class AppConfigManager(BaseManager):
+    def __init__(self, app):
+        if not isinstance(app, AppManager):
+            raise TypeError('App must be an instance of modules.apps.managers.AppManager')
+
+        app.should_exist()
+
+        self.app = app
+        self.config = self._get_config()
+
+        super().__init__()
+
+    def _get_config(self):
+        # Get config from app
+        return json.loads(open(self.app.get_config_path(), 'r').read())
+
+    def save(self):
+        # Save config dict to app config file
+        open(self.app.get_config_path(), 'w').write(json.dumps(self.config))
+        self.logger.info('Configuration saved.')

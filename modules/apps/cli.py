@@ -1,5 +1,5 @@
 from core.cli import BaseCommandLine
-from modules.apps.managers import AppManager
+from modules.apps.managers import AppManager, AppConfigManager
 
 
 class App(BaseCommandLine):
