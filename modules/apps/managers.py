@@ -59,11 +59,7 @@ class AppManager(BaseManager):
         os.mkdir(self.get_path())
         os.mkdir(self.get_data_path())
 
-        config_path = self.get_config_path()
-        if not os.path.exists(config_path):
-            with open(self.get_config_path(), 'w+') as f:
-                f.write(json.dumps({}))
-                f.close()
+        sh.touch(self.get_config_path())
 
         self.logger.info('Created successfully.')
 
@@ -123,7 +119,8 @@ class AppConfigManager(BaseManager):
 
     def _get_config(self):
         # Get config from app
-        return json.loads(open(self.app.get_config_path(), 'r').read())
+        config = open(self.app.get_config_path(), 'r').read()
+        return json.loads(config if len(config) else '{}')
 
     def save(self):
         # Save config dict to app config file

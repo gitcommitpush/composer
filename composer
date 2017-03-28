@@ -2,6 +2,7 @@
 from modules.apps.cli import App
 from modules.config.cli import Config
 from modules.environment.cli import Env
+from modules.compose.cli import Compose
 import fire
 
 
@@ -10,6 +11,7 @@ class Composer(object):
         self.app = App
         self.config = Config
         self.env = Env
+        self.compose = Compose
 
     def __str__(self):
         return 'Composer CLI'
