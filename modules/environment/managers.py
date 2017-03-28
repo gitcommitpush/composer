@@ -1,5 +1,6 @@
 from core.managers import BaseManager
 from modules.apps.managers import AppConfigManager, AppManager
+import os
 
 
 class EnvironmentManager(BaseManager):
@@ -72,3 +73,12 @@ class EnvironmentManager(BaseManager):
 
         for env_key, env_value in self.config_manager.config['env'][self.env].items():
             print('{}={}'.format(env_key, env_value))
+
+    def setup_environment(self):
+        # Load variables into OS environment
+        self.should_exist()
+
+        for env_key, env_value in self.config_manager.config['env'][self.env].items():
+            os.environ[env_key] = env_value
+
+        self.logger.info('Environment "{}" loaded.'.format(self.env))
