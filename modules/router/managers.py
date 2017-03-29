@@ -28,7 +28,7 @@ class RouterManager(BaseManager):
         super().__init__()
 
     def get_hostname(self):
-        return '{}.{}'.format(self.config.get('hostname', self.app.get_name()), settings.BASE_DOMAIN)
+        return self.config.get('hostname', '{}.{}'.format(self.app.get_name(), settings.BASE_DOMAIN))
 
     def define_route(self, port):
         content = NGINX_PROXY_TEMPLATE.format(
