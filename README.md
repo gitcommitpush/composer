@@ -10,7 +10,7 @@ An easy-to-use deployment platform based on docker-compose.
 
 Firstly download the install script and make it executable:
 ```
-https://raw.githubusercontent.com/gitcommitpush/composer/master/install.sh
+wget https://raw.githubusercontent.com/gitcommitpush/composer/master/install.sh
 chmod +x install.sh
 ```
 
