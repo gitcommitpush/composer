@@ -12,6 +12,7 @@ server {{
 
     location / {{
         proxy_pass http://localhost:{port};
+        proxy_pass_request_headers on;
     }}
 }}
 '''
