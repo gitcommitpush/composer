@@ -25,7 +25,11 @@ server {{
     def __init__(self, app):
         self.app_name = app
         self.app = self  # Should always be an AppManager instance
-        self.config = self._get_config()
+        self.config = None
+
+        if os.path.exists(self.get_path()):
+            self.config = self._get_config()
+
         super().__init__()
 
     def get_name(self):
