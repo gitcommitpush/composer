@@ -41,9 +41,8 @@ server {{
         return os.path.join(self.get_path(), self.DATA_DIR)
 
     def get_config_path(self):
-        # Get config file - use repo config or fallback on local config
-        repo_config = os.path.join(self.get_data_path(), self.CONFIG_NAME)
-        return repo_config if os.path.exists(repo_config) else os.path.join(self.get_path(), self.CONFIG_NAME)
+        # Get app config file - used internally only
+        return os.path.join(self.get_path(), self.CONFIG_NAME)
 
     def get_proxy_config_path(self):
         # Get proxy config location
@@ -57,7 +56,6 @@ server {{
             template = self.DEFAULT_PROXY_CONFIG_TEMPLATE
 
         return template
-
 
     def should_exist(self):
         # Expect that app exists
