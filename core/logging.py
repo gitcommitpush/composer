@@ -14,7 +14,10 @@ class Logger(object):
         self.prefix = prefix
         self.log = open(os.path.join(LOG_DIR, log), 'a+')
 
-    def write(self, tag, msg, silent, raise_exception=False):
+    def write(self, tag, msg, silent, extra, raise_exception=False):
+        if extra:
+            msg += ':\n\n{}'.format(str(extra.decode("utf-8")))
+
         formatted_msg = '=> [{tag}] {prefix} {msg}'.format(
             prefix=self.prefix,
             tag=tag,
@@ -31,12 +34,9 @@ class Logger(object):
     def info(self, msg, silent=False):
         self.write('INFO', msg, silent)
 
-    def warn(self, msg, silent=False):
-        self.write('WARN', msg, silent)
+    def warn(self, msg, extra=None, silent=False):
+        self.write('WARN', msg, silent, extra)
 
     def fail(self, msg, extra=None, raise_exception=True, silent=False):
-        if extra:
-            msg += ':\n\n{}'.format(str(extra.decode("utf-8")))
-
-        self.write('FAIL', msg, silent, raise_exception)
+        self.write('FAIL', msg, silent, extra, raise_exception)
 
