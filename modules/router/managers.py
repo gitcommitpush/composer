@@ -30,9 +30,9 @@ class RouterManager(BaseManager):
     def run_pre_check(self, port):
         self.logger.info('Running pre-checks...')
         try:
-            subprocess.check_output(['nc', '-z', '127.0.0.1', port])
+            subprocess.check_output(['nc', '-z', '127.0.0.1', str(port)])
         except subprocess.CalledProcessError:
-            self.logger.fail('Container is not listening on port {}'.format(port))
+            self.logger.fail('Container is not listening on port {}'.format(str(port)))
 
         self.logger.info('Pre-checks successful.')
 
