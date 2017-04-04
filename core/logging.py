@@ -14,7 +14,7 @@ class Logger(object):
         self.prefix = prefix
         self.log = open(os.path.join(LOG_DIR, log), 'a+')
 
-    def write(self, tag, msg, silent, extra, raise_exception=False):
+    def write(self, tag, msg, silent, extra=None, raise_exception=False):
         if extra:
             msg += ':\n\n{}'.format(str(extra.decode("utf-8")))
 
