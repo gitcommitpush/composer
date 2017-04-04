@@ -1,5 +1,5 @@
 from core.cli import BaseCommandLine
-from modules.apps.managers import AppManager, AppConfigManager
+from modules.apps.managers import AppManager
 
 
 class App(BaseCommandLine):
@@ -14,9 +14,9 @@ class App(BaseCommandLine):
         manager = self._get_manager(app)
         manager.delete()
 
-    def clone(self, app, repo, branch='master'):
+    def fetch(self, app, repo, branch='master'):
         manager = self._get_manager(app)
-        manager.clone(repo)
+        manager.fetch(repo)
 
     def change_repo(self, app, repo, branch='master'):
         manager = self._get_manager(app)

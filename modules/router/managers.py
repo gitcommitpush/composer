@@ -1,44 +1,49 @@
 from core.managers import BaseManager
 from core import settings
-from modules.apps.managers import AppConfigManager, AppManager
+from modules.apps.managers import AppManager
 import os
-import sh
-
-
-NGINX_PROXY_TEMPLATE = '''
-server {{
-    listen 80;
-    server_name {hostname};
-
-    location / {{
-        proxy_pass http://localhost:{port};
-        proxy_pass_request_headers on;
-    }}
-}}
-'''
+import subprocess
+import socket
 
 
 class RouterManager(BaseManager):
-    def __init__(self, config_manager):
-        if not isinstance(config_manager, AppConfigManager):
-            raise TypeError('Config manager should be an instance of AppConfigManager.')
-
-        self.config = config_manager.config
-        self.app = config_manager.app
+    def __init__(self, app):
+        self.app = app
+        self.config = app.config
 
         super().__init__()
 
     def get_hostname(self):
         return self.config.get('hostname', '{}.{}'.format(self.app.get_name(), settings.BASE_DOMAIN))
 
+    def get_config_template(self):
+        return self.app.get_proxy_template()
+
+    def get_available_port(self):
+        sock = socket.socket()
+        sock.bind(('', 0))
+        available_port = sock.getsockname()[1]
+        sock.close()
+        return available_port
+
     def define_route(self, port):
-        content = NGINX_PROXY_TEMPLATE.format(
-            hostname=self.get_hostname(),
-            port=port
-        )
+        self.logger.info('Routing hostname to container...')
+        content = self.get_config_template().format(hostname=self.get_hostname(), port=port)
 
-        with open(os.path.join(settings.NGINX_CONFIG_LOCATION, '{}.conf'.format(self.app.get_name())), 'w+') as f:
-            f.write(content)
-            f.close()
+        try:
+            with open(self.app.get_proxy_config_path(), 'w+') as f:
+                f.write(content)
+                f.close()
+        except IOError:
+            self.logger.fail('Routing failed: could not write proxy config file')
 
-        sh.service('nginx', 'restart')
+        try:
+            subprocess.check_output(['service', 'nginx', 'restart'], stderr=subprocess.STDOUT)
+        except FileNotFoundError:
+            self.logger.fail('Routing failed: command "service" not found. Possibly an unsupported operating system?')
+        except subprocess.CalledProcessError as error:
+            self.logger.warn('Routing failed: could not restart proxy service', extra=error.output)
+
+        self.logger.info('Routing successful.')
+        self.logger.info('Map [ {} => 127.0.0.1:{} ]'.format(self.get_hostname(), port))
+        self.logger.info('You can also access this application via port {}'.format(port))

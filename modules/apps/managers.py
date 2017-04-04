@@ -3,16 +3,29 @@ from core.managers import BaseManager
 import shutil
 import os
 import json
-import sh
+import subprocess
 
 
 class AppManager(BaseManager):
     DATA_DIR = 'app-data'
     CONFIG_NAME = 'compose.json'
+    PROXY_CONFIG_EXTENSION = '.conf'
+    DEFAULT_PROXY_CONFIG_TEMPLATE = '''
+server {{
+    listen 80;
+    server_name {hostname};
+
+    location / {{
+        proxy_pass http://127.0.0.1:{port};
+        proxy_pass_request_headers on;
+    }}
+}}
+'''
 
     def __init__(self, app):
         self.app_name = app
         self.app = self  # Should always be an AppManager instance
+        self.config = self._get_config()
         super().__init__()
 
     def get_name(self):
@@ -31,6 +44,20 @@ class AppManager(BaseManager):
         # Get config file - use repo config or fallback on local config
         repo_config = os.path.join(self.get_data_path(), self.CONFIG_NAME)
         return repo_config if os.path.exists(repo_config) else os.path.join(self.get_path(), self.CONFIG_NAME)
+
+    def get_proxy_config_path(self):
+        # Get proxy config location
+        return os.path.join(settings.PROXY_CONFIG_LOCATION, self.get_name() + self.PROXY_CONFIG_EXTENSION)
+
+    def get_proxy_template(self):
+        # Get proxy template to use for proxy config file
+        try:
+            template = open(self.config.get('proxy_config_template', 'r')).read()
+        except:
+            template = self.DEFAULT_PROXY_CONFIG_TEMPLATE
+
+        return template
+
 
     def should_exist(self):
         # Expect that app exists
@@ -59,7 +86,10 @@ class AppManager(BaseManager):
         os.mkdir(self.get_path())
         os.mkdir(self.get_data_path())
 
-        sh.touch(self.get_config_path())
+        try:
+            subprocess.check_output(['touch', self.get_config_path()], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as error:
+            self.logger.fail('Could not create config file', extra=error.output)
 
         self.logger.info('Created successfully.')
 
@@ -67,7 +97,10 @@ class AppManager(BaseManager):
         # Delete an app
         self.should_exist()
 
-        sh.rm('-rf', self.get_path())
+        try:
+            subprocess.check_output(['rm', '-r', self.get_path()], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as error:
+            self.logger.fail('Could not delete app', extra=error.output)
 
         self.logger.info('Deleted successfully.')
 
@@ -77,23 +110,25 @@ class AppManager(BaseManager):
         self.should_not_be_empty()
 
         try:
-            sh.git('checkout', branch)
-            self.logger.info('Switched to branch {}'.format(branch))
-        except sh.ErrorReturnCode as e:
-            self.logger.fail('Error with Git repository: \n\n{}'.format(e))
+            subprocess.check_output(['git', 'checkout', branch], stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as error:
+            self.logger.fail('Error with Git repository', extra=error.output)
 
-    def clone(self, repo, branch='master'):
+        self.logger.info('Switched to branch {}'.format(branch))
+
+    def fetch(self, repo, branch='master'):
         # Clone Git repo
         self.should_exist()
         self.should_be_empty()
 
         try:
             os.chdir(self.get_data_path())
-            sh.git('clone', repo, '.')
-            self.logger.info('Successfully cloned from repository.')
+            subprocess.check_output(['git', 'clone', repo, '.'], stderr=subprocess.STDOUT)
             self.change_branch(branch)
-        except sh.ErrorReturnCode as e:
-            self.logger.fail('Error with Git repository: \n\n{}'.format(e))
+        except subprocess.CalledProcessError as error:
+            self.logger.fail('Error with Git repository', extra=error.output)
+
+        self.logger.info('Successfully cloned from repository.')
 
     def change_repo(self, *args):
         # Change Git repo
@@ -102,27 +137,14 @@ class AppManager(BaseManager):
         shutil.rmtree(self.get_data_path())
         os.mkdir(self.get_data_path())
 
-        self.clone(*args)
-
-
-class AppConfigManager(BaseManager):
-    def __init__(self, app):
-        if not isinstance(app, AppManager):
-            raise TypeError('App must be an instance of modules.apps.managers.AppManager')
-
-        app.should_exist()
-
-        self.app = app
-        self.config = self._get_config()
-
-        super().__init__()
+        self.fetch(*args)
 
     def _get_config(self):
         # Get config from app
         config = open(self.app.get_config_path(), 'r').read()
         return json.loads(config if len(config) else '{}')
 
-    def save(self):
+    def save_config(self):
         # Save config dict to app config file
         open(self.app.get_config_path(), 'w').write(json.dumps(self.config))
         self.logger.info('Configuration saved.')

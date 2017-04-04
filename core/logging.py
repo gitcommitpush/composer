@@ -15,12 +15,12 @@ class Logger(object):
         self.log = open(os.path.join(LOG_DIR, log), 'a+')
 
     def write(self, tag, msg, silent, raise_exception=False):
-        formatted_msg = '[{tag}] {prefix} {msg}\n'.format(
+        formatted_msg = '=> [{tag}] {prefix} {msg}'.format(
             prefix=self.prefix,
             tag=tag,
             msg=msg
         )
-        self.log.write('[{}]{}'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), formatted_msg))
+        self.log.write('[{}]{}\n'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), formatted_msg))
 
         if not silent and not raise_exception:
             print(formatted_msg)
@@ -34,6 +34,9 @@ class Logger(object):
     def warn(self, msg, silent=False):
         self.write('WARN', msg, silent)
 
-    def fail(self, msg, raise_exception=True, silent=False):
+    def fail(self, msg, extra=None, raise_exception=True, silent=False):
+        if extra:
+            msg += ':\n\n{}'.format(str(extra.decode("utf-8")))
+
         self.write('FAIL', msg, silent, raise_exception)
 
