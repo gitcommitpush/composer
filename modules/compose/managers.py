@@ -35,7 +35,7 @@ class ComposeManager(BaseManager):
 
         try:
             self.logger.info('Starting app...')
-            sh.docker_compose('up', '-d')
+            sh.docker_compose('up', '-d', '--build')
             self.logger.info('Started successfully.')
             self.logger.info('Routing hostname to container...')
             self.router_manager.define_route(port)
